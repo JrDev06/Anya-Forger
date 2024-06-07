@@ -5,63 +5,11 @@ const chalk = require('chalk');
 const path = require('path');
 const axios = require("axios");
 const app = express();
-const PingMonitor = require('ping-monitor');
-const pingOptions = {
-  website: `https://umaru-bot-0crr.onrender.com`,
-  title: 'Umaru Chan',
-  interval: 1 
-};
 
-const monitor = new PingMonitor(pingOptions);
+const config = require('./config.json');
 
-monitor.on('up', (res) => {
-  const pingTime = res.ping ? `${res.ping}ms` : '';
-  console.log(chalk.green.bold(`${res.website} is UP. ${pingTime}`));
-});
-
-monitor.on('down', (res) => {
-  console.log(chalk.red.bold(`${res.website} is DOWN. Status Message: ${res.statusMessage}`));
-});
-
-monitor.on('error', (error) => {
-  console.log(chalk.red(`An error has occurred: ${error}`));
-});
-
-setInterval(() => {
-  if (monitor.isRunning()) {
-    console.log(chalk.green.bold('Uptime notification: The website is running smoothly.'));
-  } else {
-    console.log(chalk.red.bold('Uptime notification: The website is currently down.'));
-  }
-}, 3600000); 
-
-monitor.on('stop', (website) => {
-  console.log(`${website} monitor has stopped.`);
-});
-
-monitor.start();
-
-function ping(targetUrl) {
-  const startPingTime = Date.now();
-
-  axios.get(targetUrl)
-    .then(() => {
-      const latency = Date.now() - startPingTime;
-      console.log(`Ping to ${targetUrl}: ${latency}ms`);
-    })
-    .catch((error) => {
-      console.error(`Error pinging ${targetUrl}: ${error.message}`);
-    });
-}
-
-
-setInterval(() => {
-  ping(`https://umaru-bot-0crr.onrender.com`);
-}, 30000); 
-const config = require('./config.json'); 
-
-const commandsPath = './modules/commands'; 
-const eventsPath = './modules/events'; 
+const commandsPath = './modules/commands';
+const eventsPath = './modules/events';
 
 const getFilesCount = (dirPath) => {
   try {
@@ -71,9 +19,7 @@ const getFilesCount = (dirPath) => {
   }
 };
 
-
-let startPingTime = Date.now();
-let botStartTime = Date.now(); 
+let botStartTime = Date.now();
 
 async function getBotInformation() {
   return {
@@ -84,11 +30,9 @@ async function getBotInformation() {
     bot: {
       name: config.BOTNAME,
       uid: config.ADMINUID,
-      fmd: config.FCA,
-      repl: config.REPL,
       lang: config.language,
-      ping: Date.now() - startPingTime,
-      },
+      fmd: config.FCA,
+    },
     fca: {
       module: config.FCA,
     }
@@ -100,7 +44,7 @@ function sendLiveData(socket) {
     const uptime = Date.now() - botStartTime;
 
     socket.emit('real-time-data', { uptime });
-  }, 1000); 
+  }, 1000);
 }
 
 app.get('/dashboard', async (req, res) => {
@@ -110,16 +54,10 @@ app.get('/dashboard', async (req, res) => {
   const botInformation = await getBotInformation();
 
   res.json({
-    botPing:
-     botInformation.bot.ping,
-    botLang:
-  botInformation.bot.lang,
-    botRepl:
-     botInformation.bot.repl,
-    botFmd:
-    botInformation.bot.fmd,
+    botLang: botInformation.bot.lang,
     botName: botInformation.bot.name,
     botUid: botInformation.bot.uid,
+    botFmd: botInformation.bot.fmd,
     ownerName: botInformation.owner.name,
     ownerUid: botInformation.owner.uid,
     prefix: config.PREFIX,
@@ -129,9 +67,7 @@ app.get('/dashboard', async (req, res) => {
   });
 });
 
-        
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'umaru.html')));
-
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'yor.html')));
 
 const http = require('http');
 const { Server } = require("socket.io");
@@ -166,7 +102,7 @@ function startBot() {
   });
 }
 
-startBot(); 
+startBot();
 
 const port = process.env.PORT || 5000;
 httpServer.listen(port, () => {
@@ -174,6 +110,3 @@ httpServer.listen(port, () => {
 });
 
 module.exports = app;
-
-
-//Modified by Jr Busaco
